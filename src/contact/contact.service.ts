@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Contact } from './schemas/contact.schema';
 import mongoose from 'mongoose';
@@ -33,6 +33,13 @@ export class ContactService {
     }
 
     async findById(id: string):Promise<Contact>{
+        
+        const isValidId = mongoose.isValidObjectId(id)
+
+        if(!isValidId){
+            throw new BadRequestException("Provide correct contact id.")
+        }
+
         const contact = await this.contactModel.findById(id)
         if(!contact){
             throw new NotFoundException("Contact not found.")
@@ -41,6 +48,12 @@ export class ContactService {
     }
 
     async updateById(id: string,contact: Contact):Promise<Contact>{
+        const isValidId = mongoose.isValidObjectId(id)
+
+        if(!isValidId){
+            throw new BadRequestException("Provide correct contact id.")
+        }
+
         return await this.contactModel.findByIdAndUpdate(id,contact,{
             new: true,
             runValidators: true
@@ -48,6 +61,13 @@ export class ContactService {
     }
 
     async deleteById(id: String):Promise<Contact>{
+
+        const isValidId = mongoose.isValidObjectId(id)
+
+        if(!isValidId){
+            throw new BadRequestException("Provide correct contact id.")
+        }
+        
         return await this.contactModel.findByIdAndDelete(id)
     }
 }
