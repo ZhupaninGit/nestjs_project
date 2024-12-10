@@ -1,10 +1,11 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
 import { ContactService } from './contact.service';
 import { Contact } from './schemas/contact.schema';
 import { UpdateContactDto } from './dto/update_contact.dto';
 import { CreateContactDto } from './dto/create-contact.dto';
 
 import { Query as ExpressQuery } from 'express-serve-static-core';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('contacts')
 export class ContactController {
@@ -18,11 +19,13 @@ export class ContactController {
     }
 
     @Post('new')
+    @UseGuards(AuthGuard())
     async createContact(
         @Body()
-        contact : CreateContactDto
+        contact : CreateContactDto,
+        @Req() req
     ): Promise<Contact> {
-        return this.contactService.create(contact)
+        return this.contactService.create(contact,req.user)
     }
 
     @Get(":id")

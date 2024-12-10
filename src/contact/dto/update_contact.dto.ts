@@ -1,4 +1,5 @@
-import { IsEmail, IsOptional, IsPhoneNumber, IsString } from "class-validator";
+import { IsEmail, IsEmpty, IsOptional, IsPhoneNumber, IsString } from "class-validator";
+import { User } from "src/auth/schemas/user.schema";
 
 export class UpdateContactDto{
     @IsOptional()
@@ -13,4 +14,7 @@ export class UpdateContactDto{
     @IsOptional()
     @IsEmail()
     readonly email: string;
+
+    @IsEmpty()
+    readonly user: User
 }

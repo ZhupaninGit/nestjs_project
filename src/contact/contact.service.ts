@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Contact } from './schemas/contact.schema';
 import mongoose from 'mongoose';
 import { Query } from 'express-serve-static-core';
+import { User } from 'src/auth/schemas/user.schema';
 
 @Injectable()
 export class ContactService {
@@ -27,7 +28,8 @@ export class ContactService {
         return contacts
     }
 
-    async create(contact: Contact):Promise<Contact>{
+    async create(contact: Contact, user: User):Promise<Contact>{
+        const data = Object.assign(contact, {user: user._id})
         const res = await this.contactModel.create(contact)
         return res
     }
