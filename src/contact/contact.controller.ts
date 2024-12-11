@@ -12,10 +12,12 @@ export class ContactController {
     constructor(private contactService: ContactService){}
 
     @Get()
+    @UseGuards(AuthGuard())
     async getAllContacts(
-        @Query() query: ExpressQuery
+        @Query() query: ExpressQuery,
+        @Req() req
     ): Promise<Contact[]> {
-        return this.contactService.findAll(query)
+        return this.contactService.findAll(query,req.user)
     }
 
     @Post('new')
@@ -31,29 +33,29 @@ export class ContactController {
     @Get(":id")
     async getContactById(
         @Param('id')
-        id: string
+        id: string,
+        @Req() req
     ): Promise<Contact> {
-        return this.contactService.findById(id)
+        return this.contactService.findById(id,req.user)
     }
 
     @Put(":id")
+    @UseGuards(AuthGuard())
     async updateContact(
-        @Param('id')
-        id: string,
-        @Body()
-        contact:UpdateContactDto
+        @Param('id') id: string,
+        @Body() contact: UpdateContactDto,
+        @Req() req
     ): Promise<Contact> {
-        return this.contactService.updateById(id,contact)
+        return this.contactService.updateById(id, contact, req.user);
     }
-
-    @Delete(":id")
-    async deleteContact(
-        @Param('id')
-        id: string,
-    ): Promise<Contact> {
-        return this.contactService.deleteById(id)
-    }
-
-
     
+    @Delete(":id")
+    @UseGuards(AuthGuard())
+    async deleteContact(
+        @Param('id') id: string,
+        @Req() req
+    ): Promise<Contact> {
+        return this.contactService.deleteById(id, req.user);
+    }
+
 }

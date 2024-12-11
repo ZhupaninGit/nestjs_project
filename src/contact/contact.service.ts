@@ -12,20 +12,28 @@ export class ContactService {
         private contactModel: mongoose.Model<Contact>
     ){}
 
-    async findAll(query : Query){
-
-        const contactsPerPage = 3
-        const currentPage = Number(query.page) || 1
-        const skip = contactsPerPage * (currentPage - 1)
-
-        const keyword = query.keyword ? {
-            name : {
-                $regex: query.keyword,
-                $options: "i"
-            }
-        } : {}
-        const contacts = await this.contactModel.find({...keyword}).limit(contactsPerPage).skip(skip)
-        return contacts
+    async findAll(query: Query, user: User) {
+        const contactsPerPage = 3;
+        const currentPage = Number(query.page) || 1;
+        const skip = contactsPerPage * (currentPage - 1);
+    
+        const keyword = query.keyword
+            ? {
+                  name: {
+                      $regex: query.keyword,
+                      $options: 'i',
+                  },
+              }
+            : {};
+    
+        const filter = { ...keyword, user: user._id };
+    
+        const contacts = await this.contactModel
+            .find(filter)
+            .limit(contactsPerPage)
+            .skip(skip);
+    
+        return contacts;
     }
 
     async create(contact: Contact, user: User):Promise<Contact>{
@@ -34,7 +42,7 @@ export class ContactService {
         return res
     }
 
-    async findById(id: string):Promise<Contact>{
+    async findById(id: string,user: User):Promise<Contact>{
         
         const isValidId = mongoose.isValidObjectId(id)
 
@@ -46,30 +54,53 @@ export class ContactService {
         if(!contact){
             throw new NotFoundException("Contact not found.")
         }
+
+        if (contact.user.toString() !== user._id.toString()) {
+            throw new BadRequestException("You are not authorized to update this contact.");
+        }
+
         return contact
     }
 
-    async updateById(id: string,contact: Contact):Promise<Contact>{
-        const isValidId = mongoose.isValidObjectId(id)
+    async updateById(id: string, contact: Contact, user: User): Promise<Contact> {
+    const isValidId = mongoose.isValidObjectId(id);
 
-        if(!isValidId){
-            throw new BadRequestException("Provide correct contact id.")
-        }
-
-        return await this.contactModel.findByIdAndUpdate(id,contact,{
-            new: true,
-            runValidators: true
-        })
+    if (!isValidId) {
+        throw new BadRequestException("Provide correct contact id.");
     }
 
-    async deleteById(id: String):Promise<Contact>{
-
-        const isValidId = mongoose.isValidObjectId(id)
-
-        if(!isValidId){
-            throw new BadRequestException("Provide correct contact id.")
-        }
-        
-        return await this.contactModel.findByIdAndDelete(id)
+    const existingContact = await this.contactModel.findById(id);
+    if (!existingContact) {
+        throw new NotFoundException("Contact not found.");
     }
+
+    if (existingContact.user.toString() !== user._id.toString()) {
+        throw new BadRequestException("You are not authorized to update this contact.");
+    }
+
+    return await this.contactModel.findByIdAndUpdate(id, contact, {
+        new: true,
+        runValidators: true,
+    });
+}
+
+async deleteById(id: string, user: User): Promise<Contact> {
+    const isValidId = mongoose.isValidObjectId(id);
+
+    if (!isValidId) {
+        throw new BadRequestException("Provide correct contact id.");
+    }
+
+    const contact = await this.contactModel.findById(id);
+    if (!contact) {
+        throw new NotFoundException("Contact not found.");
+    }
+
+    if (contact.user.toString() !== user._id.toString()) {
+        throw new BadRequestException("You are not authorized to delete this contact.");
+    }
+
+    return await this.contactModel.findByIdAndDelete(id);
+}
+
 }
