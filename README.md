@@ -62,21 +62,15 @@ The backend system is a Contact Management API implemented using NestJS and Mong
 | GET /contacts/:id | Fetches a specific contact. |
 | PUT /contacts/:id | Updates a contact. |
 | DELETE /contacts/:id | Deletes a contact. |
-
-
-
-GET /contacts/:id: Fetches a specific contact.
-
-PUT /contacts/:id: Updates a contact.
-
-DELETE /contacts/:id: Deletes a contact.
-
-  
   
 
 ## Compile and run the project
 
-  
+Define environment variables in .env file
+
+-  DB_URI
+-  JWT_EXPIRES
+-  JWT_SECRET
 
 ```bash
 
